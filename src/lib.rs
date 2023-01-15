@@ -1,21 +1,20 @@
-use std::thread::JoinHandle;
-use std::time::Instant;
 use std::{
     sync::mpsc::{channel, Sender, TryRecvError},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
-pub use crate::utils::spinner_names::SpinnerNames as Spinners;
-use crate::utils::spinners_data::SPINNERS as SpinnersMap;
-pub use crate::utils::stream::Stream;
+use utils::spinners::SPINNERS;
+
+pub use crate::utils::{spinners::Spinners, stream::Stream};
 
 mod utils;
 
+#[derive(Debug)]
 pub struct Spinner {
     sender: Sender<(Instant, Option<String>)>,
-    join: Option<JoinHandle<()>>,
-    stream: Stream
+    join: Option<thread::JoinHandle<()>>,
+    stream: Stream,
 }
 
 impl Drop for Spinner {
@@ -47,12 +46,12 @@ impl Spinner {
     ///
     /// let sp = Spinner::new(Spinners::Dots, String::new());
     /// ```
-    pub fn new(spinner: Spinners, message: String) -> Self {
+    pub fn new(spinner: Spinners, message: &str) -> Self {
         Self::new_inner(spinner, message, None, None)
     }
 
     /// Create a new spinner that logs the time since it was created
-    pub fn with_timer(spinner: Spinners, message: String) -> Self {
+    pub fn with_timer(spinner: Spinners, message: &str) -> Self {
         Self::new_inner(spinner, message, Some(Instant::now()), None)
     }
 
@@ -64,10 +63,14 @@ impl Spinner {
     ///
     /// ```
     /// use spinners::{Spinner, Spinners, Stream};
-    /// 
+    ///
     /// let sp = Spinner::with_stream(Spinners::Dots, String::new(), Stream::Stderr);
     /// ```
-    pub fn with_stream(spinner: Spinners, message: String, stream: Stream) -> Self {
+    pub fn with_stream(
+        spinner: Spinners,
+        message: &str,
+        stream: Stream,
+    ) -> Self {
         Self::new_inner(spinner, message, None, Some(stream))
     }
 
@@ -79,49 +82,63 @@ impl Spinner {
     ///
     /// ```
     /// use spinners::{Spinner, Spinners, Stream};
-    /// 
+    ///
     /// let sp = Spinner::with_timer_and_stream(Spinners::Dots, String::new(), Stream::Stderr);
     /// ```
-    pub fn with_timer_and_stream(spinner: Spinners, message: String, stream: Stream) -> Self {
+    pub fn with_timer_and_stream(
+        spinner: Spinners,
+        message: &str,
+        stream: Stream,
+    ) -> Self {
         Self::new_inner(spinner, message, Some(Instant::now()), Some(stream))
     }
 
-    fn new_inner(spinner: Spinners, message: String, start_time: Option<Instant>, stream: Option<Stream>) -> Self 
-    {
-        let spinner_name = spinner.to_string();
-        let spinner_data = SpinnersMap
-            .get(&spinner_name)
-            .unwrap_or_else(|| panic!("No Spinner found with the given name: {}", spinner_name));
+    fn new_inner(
+        spinner: Spinners,
+        message: &str,
+        start_time: Option<Instant>,
+        stream: Option<Stream>,
+    ) -> Self {
+        let spinner_data = SPINNERS.get(spinner.as_ref()).expect(&format!(
+            "No Spinner found with the given name: {}",
+            spinner.as_ref()
+        ));
 
-        let stream = if let Some(stream) = stream { stream } else { Stream::default() };
+        let stream = stream.unwrap_or_default();
 
         let (sender, recv) = channel::<(Instant, Option<String>)>();
 
+        let message = message.to_string();
         let join = thread::spawn(move || 'outer: loop {
-
             for frame in spinner_data.frames.iter() {
                 let (do_stop, stop_time, stop_symbol) = match recv.try_recv() {
-                    Ok((stop_time, stop_symbol)) => (true, Some(stop_time), stop_symbol),
+                    Ok((stop_time, stop_symbol)) => {
+                        (true, Some(stop_time), stop_symbol)
+                    }
                     Err(TryRecvError::Disconnected) => (true, None, None),
                     Err(TryRecvError::Empty) => (false, None, None),
                 };
 
                 let frame = stop_symbol.unwrap_or_else(|| frame.to_string());
 
-                stream.write(&frame, &message, start_time, stop_time).expect("IO Error");
+                stream
+                    .write(&frame, &message, start_time, stop_time)
+                    .expect("IO Error");
 
                 if do_stop {
                     break 'outer;
                 }
 
-                thread::sleep(Duration::from_millis(spinner_data.interval as u64));
+                thread::sleep(Duration::from_millis(
+                    spinner_data.interval as u64,
+                ));
             }
         });
 
         Self {
             sender,
             join: Some(join),
-            stream
+            stream,
         }
     }
 
@@ -232,7 +249,9 @@ impl Spinner {
     /// ```
     pub fn stop_and_persist(&mut self, symbol: &str, msg: String) {
         self.stop();
-        self.stream.stop(Some(&msg), Some(symbol)).expect("IO Error");
+        self.stream
+            .stop(Some(&msg), Some(symbol))
+            .expect("IO Error");
     }
 
     fn stop_inner(&mut self, stop_time: Instant, stop_symbol: Option<String>) {

@@ -7,7 +7,7 @@ fn main() {
 
     let mut sp = Spinner::new(
         Spinners::from_str(&spinner_name).unwrap(),
-        "Waiting for 3 seconds".into(),
+        "Waiting for 3 seconds",
     );
     sleep(Duration::from_secs(3));
     sp.stop_and_persist("✔", "That worked!".to_string())
