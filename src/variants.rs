@@ -1,3 +1,4 @@
+use once_cell::sync::Lazy;
 use paste::paste;
 use std::{convert::From, marker::PhantomData};
 
@@ -23,17 +24,26 @@ impl<S> SpinnerIdent<S> {
     }
 }
 
-impl AsRef<str> for SpinnerVariant {
-    fn as_ref(&self) -> &str {
-        self.name
+#[derive(Debug, Default, Copy, Clone)]
+pub struct Dots;
+
+impl From<Dots> for SpinnerVariant {
+    fn from(_: Dots) -> SpinnerVariant {
+        DOTS_SPINNER.clone()
     }
 }
+
+static DOTS_SPINNER: Lazy<SpinnerVariant> = Lazy::new(|| SpinnerVariant {
+    name: "dots",
+    interval: 80,
+    frames: vec!["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+});
 
 macro_rules! spinner {
     ( $spinner_name:expr, [ $( $frame:expr ),* ], $interval:expr ) => {
         paste! {
             #[cfg(feature = $spinner_name)]
-            #[derive(Debug, Default, Clone)]
+            #[derive(Debug, Default, Copy, Clone)]
             pub struct [< $spinner_name:camel >];
 
             #[cfg(feature = $spinner_name)]
@@ -45,8 +55,8 @@ macro_rules! spinner {
             }
 
             #[cfg(feature = $spinner_name)]
-            static [< $spinner_name:upper _SPINNER>]: once_cell::sync::Lazy<SpinnerVariant>
-                = once_cell::sync::Lazy::new(|| SpinnerVariant {
+            static [< $spinner_name:upper _SPINNER>]: Lazy<SpinnerVariant>
+                = Lazy::new(|| SpinnerVariant {
                     name: $spinner_name,
                     interval: $interval,
                     frames: vec![$($frame),*]
@@ -55,11 +65,6 @@ macro_rules! spinner {
     };
 }
 
-spinner!(
-    "dots",
-    ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
-    80
-);
 spinner!("dots2", ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"], 80);
 spinner!(
     "dots3",
