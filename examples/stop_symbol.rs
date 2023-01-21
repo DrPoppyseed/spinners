@@ -1,14 +1,10 @@
-use spinners::{Spinner, Spinners};
-use std::{env, str::FromStr, thread::sleep, time::Duration};
+use atomic_spinners::SpinnerBuilder;
+use std::{thread::sleep, time::Duration};
 
 fn main() {
-    let mut args = env::args();
-    let spinner_name = args.nth(1).unwrap_or_else(|| "Dots9".to_string());
-
-    let mut sp = Spinner::new(
-        Spinners::from_str(&spinner_name).unwrap(),
-        "Waiting for 3 seconds".into(),
-    );
+    let mut sp = SpinnerBuilder::new()
+        .message("Waiting for 3 seconds")
+        .build();
     sleep(Duration::from_secs(3));
     sp.stop_with_symbol("\x1b[32m🗸\x1b[0m");
 }
