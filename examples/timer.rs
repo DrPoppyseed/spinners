@@ -1,14 +1,17 @@
-use spinners::{Spinner, Spinners};
-use std::{env, str::FromStr, thread::sleep, time::Duration};
+#[cfg(feature = "dots")]
+use atomic_spinners::{variants, Spinner};
 
-fn main() {
-    let mut args = env::args();
-    let spinner_name = args.nth(1).unwrap_or_else(|| "Dots9".to_string());
+#[cfg(feature = "dots")]
+use std::{thread::sleep, time::Duration};
 
-    let mut sp = Spinner::with_timer(
-        Spinners::from_str(&spinner_name).unwrap(),
-        "Waiting for 3 seconds",
-    );
+#[cfg(feature = "dots")]
+fn runner() {
+    let mut sp = Spinner::with_timer(variants::Dots, "Waiting for 3 seconds");
     sleep(Duration::from_secs(3));
     sp.stop_with_newline();
+}
+
+fn main() {
+    #[cfg(feature = "dots")]
+    runner()
 }

@@ -26,7 +26,7 @@ impl Stream {
         frame: &str,
         message: &str,
     ) -> Result<()> {
-        write!(writer, "\r{} {}", frame, message)?;
+        write!(writer, "\r{frame} {message}")?;
         writer.flush()
     }
 
@@ -40,7 +40,7 @@ impl Stream {
     ) -> Result<()> {
         let now = stop_time.unwrap_or_else(Instant::now);
         let duration = now.duration_since(start_time).as_secs_f64();
-        write!(writer, "\r{}{:>10.3} s\t{}", frame, duration, message)?;
+        write!(writer, "\r{frame}{duration:>10.3} s\t{message}")?;
         writer.flush()
     }
 
@@ -75,10 +75,10 @@ impl Stream {
         let mut writer = self.match_target();
         match (message, symbol) {
             // persist with symbol and message
-            (Some(m), Some(s)) => writeln!(writer, "\x1b[2K\r{} {}", s, m),
+            (Some(m), Some(s)) => writeln!(writer, "\x1b[2K\r{s} {m}"),
 
             // persist with message only
-            (Some(m), None) => writeln!(writer, "\x1b[2K\r{}", m),
+            (Some(m), None) => writeln!(writer, "\x1b[2K\r{m}"),
 
             // simple newline
             _ => writeln!(writer),

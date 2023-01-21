@@ -1,20 +1,131 @@
 [package]
-name = "spinners"
-version = "4.1.0"
+name = "atomic-spinners"
+version = "0.1.0"
 edition = "2021"
-authors = ["François-Guillaume RIBREAU <github@fgribreau.com>", "jewlexx"]
-homepage = "https://github.com/fgribreau/spinners"
-repository = "https://github.com/fgribreau/spinners"
-readme = "README.md"
-documentation = "https://docs.rs/spinners"
-description = "🛎 60+ Elegant terminal spinners for Rust"
+authors = [
+  "François-Guillaume RIBREAU <github@fgribreau.com>", 
+  "jewlexx", 
+  "Haruki Jay Shimada <peaske16180@gmail.com>"
+]
+repository = "https://github.com/DrPoppyseed/atomic-spinners"
+description = "A fork of the spinners crate, with a focus on atomicity"
 keywords = ["spinner", "spin", "loader", "term", "terminal"]
 categories = ["command-line-interface"]
 license = "MIT"
-include = ["src/**/*", "README.md"]
+include = ["src/**/*", "README.md", "LICENSE"]
+
+[features]
+default = []
+
+all = [
+  "dots", "dots2", "dots3", "dots4", "dots5", "dots6", "dots7", "dots8", "dots9",
+  "dots10", "dots11", "dots12", "dots8bit", "line", "line2", "pipe", "simple_dots",
+  "simple_dots_scroll", "star", "star2", "flip", "hamburger", "grow_verticle",
+  "grow_horizontal", "balloon", "balloon2", "noise", "bounce", "box_bounce",
+  "box_bounce2", "triangle", "arc", "circle", "square_corners", "circle_quarters",
+  "circle_halves", "squish", "toggle", "toggle2", "toggle3", "toggle4", "toggle5",
+  "toggle6", "toggle7", "toggle8", "toggle9", "toggle10", "toggle11", "toggle12",
+  "toggle13", "arrow", "arrow2", "arrow3", "bouncing_bar", "bouncing_ball",
+  "smiley", "monkey", "hearts", "clock", "earth", "moon", "runner", "pong", "shark",
+  "material", "weather", "christmas", "grenade", "point", "layer", "beta_wave",
+  "finger_dance", "fist_bump", "dqpb", "soccer_header", "mind_blown", "speaker",
+  "orange_pulse", "blue_pulse", "orange_blue_pulse", "time_travel", "aesthetic",
+]
+only_dots = [
+  "dots", "dots2", "dots3", "dots4", "dots5", "dots6", "dots7", "dots8", "dots9",
+  "dots10", "dots11", "dots12", "dots8bit"
+]
+
+dots = []
+dots2 = []
+dots3 = []
+dots4 = []
+dots5 = []
+dots6 = []
+dots7 = []
+dots8 = []
+dots9 = []
+dots10 = []
+dots11 = []
+dots12 = []
+dots8bit = []
+
+line = []
+line2 = []
+pipe = []
+
+simple_dots = []
+simple_dots_scroll = []
+
+star = []
+star2 = []
+flip = []
+hamburger = []
+grow_horizontal = []
+grow_verticle = []
+balloon = []
+balloon2 = []
+noise = []
+bounce = []
+box_bounce = []
+box_bounce2 = []
+triangle = []
+arc = []
+circle = []
+square_corners = []
+circle_quarters = []
+circle_halves = []
+squish = []
+
+toggle = []
+toggle2 = []
+toggle3 = []
+toggle4 = []
+toggle5 = []
+toggle6 = []
+toggle7 = []
+toggle8 = []
+toggle9 = []
+toggle10 = []
+toggle11 = []
+toggle12 = []
+toggle13 = []
+
+arrow = []
+arrow2 = []
+arrow3 = []
+
+bouncing_bar = []
+bouncing_ball = []
+smiley = []
+monkey = []
+hearts = []
+clock = []
+earth = []
+moon = []
+runner = []
+material = []
+pong = []
+shark = []
+weather = []
+christmas = []
+grenade = []
+point = []
+layer = []
+beta_wave = []
+finger_dance = []
+fist_bump = []
+dqpb = []
+soccer_header = []
+mind_blown = []
+speaker = []
+orange_pulse = []
+blue_pulse = []
+orange_blue_pulse = []
+time_travel = []
+aesthetic = []
 
 [dependencies]
-lazy_static = { version = "1.4.0" }
-maplit = { version = "1.0.2" }
 once_cell = "1.17.0"
-strum = { version = "0.24.0", features = ["derive"] }
+paste = "1.0.11"
+

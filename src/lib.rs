@@ -4,11 +4,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-use utils::spinners::SPINNERS;
+pub use stream::Stream;
+pub use variants::*;
 
-pub use crate::utils::{spinners::Spinners, stream::Stream};
-
-mod utils;
+pub mod stream;
+pub mod variants;
 
 #[derive(Debug)]
 pub struct Spinner {
@@ -36,7 +36,7 @@ impl Spinner {
     /// ```
     /// use spinners::{Spinner, Spinners};
     ///
-    /// let sp = Spinner::new(Spinners::Dots, "Loading things into memory...".into());
+    /// let sp = Spinner::new(Spinners::DOTS, "Loading things into memory...");
     /// ```
     ///
     /// No Message:
@@ -44,14 +44,17 @@ impl Spinner {
     /// ```
     /// use spinners::{Spinner, Spinners};
     ///
-    /// let sp = Spinner::new(Spinners::Dots, String::new());
+    /// let sp = Spinner::new(Spinners::DOTS, "");
     /// ```
-    pub fn new(spinner: Spinners, message: &str) -> Self {
+    pub fn new(spinner: impl Into<SpinnerVariant>, message: &str) -> Self {
         Self::new_inner(spinner, message, None, None)
     }
 
     /// Create a new spinner that logs the time since it was created
-    pub fn with_timer(spinner: Spinners, message: &str) -> Self {
+    pub fn with_timer(
+        spinner: impl Into<SpinnerVariant>,
+        message: &str,
+    ) -> Self {
         Self::new_inner(spinner, message, Some(Instant::now()), None)
     }
 
@@ -67,7 +70,7 @@ impl Spinner {
     /// let sp = Spinner::with_stream(Spinners::Dots, String::new(), Stream::Stderr);
     /// ```
     pub fn with_stream(
-        spinner: Spinners,
+        spinner: impl Into<SpinnerVariant>,
         message: &str,
         stream: Stream,
     ) -> Self {
@@ -86,7 +89,7 @@ impl Spinner {
     /// let sp = Spinner::with_timer_and_stream(Spinners::Dots, String::new(), Stream::Stderr);
     /// ```
     pub fn with_timer_and_stream(
-        spinner: Spinners,
+        spinner: impl Into<SpinnerVariant>,
         message: &str,
         stream: Stream,
     ) -> Self {
@@ -94,23 +97,19 @@ impl Spinner {
     }
 
     fn new_inner(
-        spinner: Spinners,
+        spinner: impl Into<SpinnerVariant>,
         message: &str,
         start_time: Option<Instant>,
         stream: Option<Stream>,
     ) -> Self {
-        let spinner_data = SPINNERS.get(spinner.as_ref()).expect(&format!(
-            "No Spinner found with the given name: {}",
-            spinner.as_ref()
-        ));
-
+        let spinner: SpinnerVariant = spinner.into();
         let stream = stream.unwrap_or_default();
 
         let (sender, recv) = channel::<(Instant, Option<String>)>();
 
         let message = message.to_string();
         let join = thread::spawn(move || 'outer: loop {
-            for frame in spinner_data.frames.iter() {
+            for frame in spinner.frames.iter() {
                 let (do_stop, stop_time, stop_symbol) = match recv.try_recv() {
                     Ok((stop_time, stop_symbol)) => {
                         (true, Some(stop_time), stop_symbol)
@@ -129,9 +128,7 @@ impl Spinner {
                     break 'outer;
                 }
 
-                thread::sleep(Duration::from_millis(
-                    spinner_data.interval as u64,
-                ));
+                thread::sleep(Duration::from_millis(spinner.interval as u64));
             }
         });
 
@@ -184,7 +181,7 @@ impl Spinner {
     /// sp.stop_with_symbol("🗸");
     /// ```
     ///
-    /// ANSI colors (green checkmark):
+    /// ANSI colors (green check mark):
     ///
     /// ```
     /// use spinners::{Spinner, Spinners};
