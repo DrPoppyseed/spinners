@@ -1,27 +1,12 @@
 use once_cell::sync::Lazy;
 use paste::paste;
-use std::{convert::From, marker::PhantomData};
+use std::convert::From;
 
 #[derive(Debug, Default, Clone)]
 pub struct SpinnerVariant {
     pub name: &'static str,
     pub interval: u32,
     pub frames: Vec<&'static str>,
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct SpinnerIdent<S> {
-    pub variant: String,
-    _phantom_data: PhantomData<*const S>,
-}
-
-impl<S> SpinnerIdent<S> {
-    pub fn new(variant: impl Into<String>) -> Self {
-        Self {
-            variant: variant.into(),
-            _phantom_data: PhantomData,
-        }
-    }
 }
 
 #[derive(Debug, Default, Copy, Clone)]
